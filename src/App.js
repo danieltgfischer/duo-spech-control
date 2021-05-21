@@ -1,23 +1,28 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useRef } from 'react';
+import { messager } from 'utils';
 
 function App() {
+  const tabIdRef = useRef(null)
+  useEffect(() => {
+    window.chrome?.tabs?.query(
+      { url: "https://www.duolingo.com/*" },
+      (tabs) => {
+        tabIdRef.current = tabs[0].id;
+        
+      }
+    );
+  }, [])
+
+  function send() {
+    messager({
+     
+      type: 'test',
+    });
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      hellowwwww
+      <button onClick={send}>me clicaaaa</button>
     </div>
   );
 }
