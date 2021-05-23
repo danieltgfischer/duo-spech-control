@@ -12,10 +12,13 @@
         "https://www.duolingo.com/*"
       ],
       "js": [
-        "content.js"
-      ]
+        "content.js",
+        "options.js"
+      ],
+      "all_frames": false
     }
   ],
+  "options_page": "options.html",
   "browser_action": {
     "default_popup": "index.html"
   }
