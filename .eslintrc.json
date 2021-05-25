@@ -37,6 +37,7 @@
     "react/jsx-one-expression-per-line": "off",
     "no-use-before-define": "off",
     "import/no-unresolved": "off",
-    "react/no-array-index-key": "off"
+    "react/no-array-index-key": "off",
+    "no-unused-vars": "off"
   }
 }

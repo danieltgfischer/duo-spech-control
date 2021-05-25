@@ -13,6 +13,18 @@ const blink = keyframes`
   }
 `;
 
+const out = keyframes`
+ from {
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+`;
+
 export const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -30,40 +42,17 @@ export const Container = styled.div`
     > div {
       position: relative;
       display: flex;
-      > .mic {
-        align-self: center;
-        width: 50px;
-        height: 50px;
-        border: 1px solid #e5e5e5;
-        border-radius: 50%;
-        background-color: #fff;
-        :hover {
-          transform: scale(1.1);
-        }
-      }
 
       .signal {
         position: absolute;
-        top: 15px;
+        top: 25px;
         right: -25px;
         z-index: 9999;
-        background: red;
+        background: #2cbbfa;
         border-radius: 50%;
         height: 15px;
         width: 15px;
         animation: ${blink} 2s infinite ease-in-out forwards;
-      }
-    }
-    .clear {
-      position: absolute;
-      right: 55px;
-      background-color: #fff;
-      width: 30px;
-      height: 30px;
-      border: 1px solid ${lighten(0.2, '#9D9D9D')};
-      border-radius: 8px;
-      :hover {
-        transform: scale(1.1);
       }
     }
   }
@@ -116,54 +105,191 @@ export const Container = styled.div`
 
   .control {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-around;
     margin: 15px 0 0;
     width: 100%;
+  }
 
-    .next {
-      background: #58cc02;
-      color: #fff;
-      border-radius: 16px;
-      border-color: #58a700;
-      border-width: 2px 2px 4px;
-      width: 100px;
-      height: 50px;
-      font-weight: bold;
-      :hover {
-        background: #61e000;
-      }
-      :active {
-        border: none;
+  .control-menu {
+    padding: 15px 0;
+    > header {
+      display: flex;
+      align-items: center;
+      .checkbox {
+        padding: 0 0 0 4px;
       }
     }
   }
 `;
 
-export const Button = styled.button`
-  background: ${({ selected }) => (selected ? '#2CBBFA' : '#fff')};
-  color: ${({ selected }) => (selected ? '#fff' : '#9D9D9D')};
-  border-radius: 16px;
+export const NextButton = styled.button`
+  position: relative;
   border-width: 2px 2px 4px;
-  border: 2px solid #e5e5e5;
-  width: 100px;
-  height: 50px;
+  position: relative;
+  background: #58cc02;
+  color: #fff;
+  border: 1px #58a700;
+  border-radius: 10px;
+  margin: 10px 0 0;
+
+  width: 80px;
+  height: 30px;
   font-weight: bold;
+
+  :hover {
+    background: #61e000;
+  }
+
+  :active {
+    border: none;
+  }
+
+  ::before {
+    display: ${({ clicked }) => (clicked ? 'static' : 'none')};
+    z-index: 1;
+    top: -5px;
+    left: -5px;
+    position: absolute;
+    border: 1px solid red;
+    width: 84px;
+    content: ' ';
+    height: 34px;
+    animation: ${out} 1s ease-out forwards;
+  }
+`;
+
+export const Button = styled.button`
+  position: relative;
+  background: ${({ selected }) => (selected ? '#2CBBFA' : '#fff')};
+  color: ${({ selected }) => (selected ? '#fff' : '#4b4b4b')};
+  border-width: 2px 2px 4px;
+  border: 2px solid
+    ${({ selected }) => (selected ? darken(0.02, '#2CBBFA') : '#e5e5e5')};
+  border-radius: 10px;
+  width: 80px;
+  height: 30px;
+  font-weight: bold;
+  margin: 10px 0 0;
+
   :hover {
     background: ${({ selected }) =>
-      selected ? darken(0.05, '#2CBBFA') : '#f7f7f7'};
+      selected ? darken(0.001, '#2CBBFA') : '#f7f7f7'};
+  }
+  ::before {
+    display: ${({ clicked }) => (clicked ? 'static' : 'none')};
+    z-index: 1;
+    top: -5px;
+    left: -5px;
+    position: absolute;
+    border: 1px solid red;
+    width: 84px;
+    content: ' ';
+    height: 34px;
+    animation: ${out} 1s ease-out forwards;
   }
 `;
 
 export const ButtonOption = styled.button`
   background: #fff;
-  color: #9d9d9d;
+  color: #4b4b4b;
   border-radius: 8px;
   border-width: 2px 2px 4px;
   border: 2px solid #e5e5e5;
   padding: 2px 4px;
   font-weight: bold;
   margin: 5px;
+
+  transition: 0.1s;
+
+  :hover {
+    box-shadow: 2px 5px 10px #eee;
+  }
+
+  :active {
+    transform: translateY(1px);
+  }
+`;
+
+export const Mic = styled.button`
+  position: relative;
+  align-self: center;
+  width: 50px;
+  height: 50px;
+  margin: 10px 0 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 50%;
+  background-color: #fff;
+  :hover {
+    transform: scale(1.1);
+  }
+
+  ::before {
+    display: ${({ clicked }) => (clicked ? 'static' : 'none')};
+    z-index: 1;
+    top: -5px;
+    left: -7px;
+    position: absolute;
+    border: 1px solid red;
+    width: 60px;
+    content: ' ';
+    height: 54px;
+    animation: ${out} 1s ease-out forwards;
+  }
+`;
+
+export const Clear = styled.button`
+  position: absolute;
+  right: 55px;
+  background-color: #fff;
+  width: 30px;
+  height: 30px;
+  border: 1px solid ${lighten(0.2, '#4b4b4b')};
+  border-radius: 8px;
+  margin: 10px 0 0;
+
+  :hover {
+    transform: scale(1.1);
+  }
+
+  ::before {
+    /* display: ${({ clicked }) => (clicked ? 'static' : 'none')}; */
+    z-index: 1;
+    top: -4px;
+    left: -4px;
+    position: absolute;
+    border: 1px solid red;
+    width: 34px;
+    content: ' ';
+    height: 34px;
+    animation: ${out} 1s ease-out forwards;
+  }
+`;
+
+export const PassButton = styled.button`
+  position: relative;
+  background: #fff;
+  color: #4b4b4b;
+  border-width: 2px 2px 4px;
+  border: 2px solid #e5e5e5;
+  border-radius: 10px;
+  width: 170px;
+  height: 30px;
+  margin: 10px 0 0;
+  font-weight: bold;
   :hover {
     background: #f7f7f7;
+  }
+  ::before {
+    display: ${({ clicked }) => (clicked ? 'static' : 'none')};
+    z-index: 1;
+    top: -5px;
+    left: -5px;
+    position: absolute;
+    border: 1px solid red;
+    width: 172px;
+    content: ' ';
+    height: 34px;
+    animation: ${out} 1s ease-out forwards;
   }
 `;

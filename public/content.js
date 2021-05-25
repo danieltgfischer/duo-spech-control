@@ -3,6 +3,17 @@ function next() {
   btn.click();
 }
 
+function listen(i = 0) {
+  const buttons = document.querySelectorAll(
+    'button[data-test="speaker-button"]',
+  );
+  buttons[i].click();
+}
+
+function speak() {
+  document.querySelector('button[data-test="challenge-speak-button"]').click();
+}
+
 function updateTextArea(text) {
   const textArea = document.querySelector('textarea');
   textArea.value = text;
@@ -21,6 +32,18 @@ if (!window.chrome.runtime.onMessage.hasListeners()) {
       }
       if (request?.type !== undefined && request?.type === 'next') {
         next();
+        return true;
+      }
+      if (request?.type !== undefined && request?.type === 'listen') {
+        listen();
+        return true;
+      }
+      if (request?.type !== undefined && request?.type === 'listen_slow') {
+        listen(1);
+        return true;
+      }
+      if (request?.type !== undefined && request?.type === 'speak') {
+        speak();
         return true;
       }
     }

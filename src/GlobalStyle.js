@@ -9,6 +9,7 @@ const GlobalStyle = createGlobalStyle`
     min-height: 150px!important;
     width: 350px!important;
     font-family: Roboto, sans-serif;
+    color: #4b4b4b;
     ::-webkit-scrollbar {
       width: 0;
       display: none;
@@ -23,6 +24,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   button {
+    background-color: transparent;
     cursor: pointer;
     outline: none;
     border: none;
