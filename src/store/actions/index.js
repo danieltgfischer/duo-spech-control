@@ -1,6 +1,12 @@
-export const UPDATE_SPEECH_CONTROL = 'UPDATE_SPEECH_CONTROL';
+export const UPDATE_LANGUAGE = 'UPDATE_LANGUAGE';
+export const UPDATE_SELECTED_LANGUAGE = 'UPDATE_SELECTED_LANGUAGE';
 
-export const updateSpeechControl = bool => ({
-  type: UPDATE_SPEECH_CONTROL,
-  payload: { bool },
+export const updateLanguage = (key, langData) => ({
+  type: UPDATE_LANGUAGE,
+  payload: { key, langData },
+});
+
+export const updateSelectedLanguage = lang => ({
+  type: UPDATE_SELECTED_LANGUAGE,
+  payload: { lang },
 });

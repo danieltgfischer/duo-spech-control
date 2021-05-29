@@ -13,7 +13,8 @@
       ],
       "js": [
         "content.js",
-        "options.js"
+        "options.js",
+        "jquery.js"
       ],
       "all_frames": false
     }

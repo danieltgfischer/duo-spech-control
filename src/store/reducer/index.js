@@ -1,30 +1,22 @@
-import { UPDATE_SPEECH_CONTROL } from '../actions';
+import { UPDATE_LANGUAGE, UPDATE_SELECTED_LANGUAGE } from '../actions';
 
 const initialState = {
-  commands_labels: {
-    mic_off: 'desligar microfone',
-    button: 'botão',
-    text: 'texto',
-    next: 'próximo',
-    send: 'enviar',
-    verify: 'verificar',
-    clear: 'limpar',
-    speak: 'falar',
-    listen: 'escutar',
-    listen_slow: 'escutar devagar',
-    cant_listen: 'não posso ouvir',
-    cant_speak: 'não posso falar',
-    speech_control: 'desativar comando de voz',
-  },
-  speech_command: false,
+  lang1: { name: 'Português (Brasil)', value: 'pt-BR' },
+  lang2: { name: 'Inglês (US)', value: 'en-US' },
+  selected_language: { name: 'Português (Brasil)', value: 'pt-BR' },
 };
 
 export default function app(state = initialState, action) {
   const { payload } = action;
   switch (action.type) {
-    case UPDATE_SPEECH_CONTROL:
-      return { ...state, speech_command: payload.bool };
-
+    case UPDATE_LANGUAGE: {
+      const { key, langData } = payload;
+      return { ...state, [key]: { ...langData } };
+    }
+    case UPDATE_SELECTED_LANGUAGE: {
+      const { lang } = payload;
+      return { ...state, selected_language: lang };
+    }
     default:
       return state;
   }

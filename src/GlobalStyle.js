@@ -6,7 +6,6 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
   }
   html, body {
-    min-height: 150px!important;
     width: 350px!important;
     font-family: Roboto, sans-serif;
     color: #4b4b4b;

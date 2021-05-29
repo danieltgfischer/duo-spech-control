@@ -1,15 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { lighten } from 'polished';
 import { BsFillMicFill, BsFillMicMuteFill } from 'react-icons/bs';
 import { AiOutlineClear } from 'react-icons/ai';
-import { IoMdCheckboxOutline } from 'react-icons/io';
-import { MdCheckBoxOutlineBlank } from 'react-icons/md';
 import SpeechRecognition, {
   useSpeechRecognition,
 } from 'react-speech-recognition';
 import { messager } from 'utils';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateSpeechControl } from 'store/actions';
+import { updateLanguage, updateSelectedLanguage } from 'store/actions';
+import { languages } from './languages';
 import {
   Container,
   Button,
@@ -17,113 +16,25 @@ import {
   NextButton,
   Mic,
   Clear,
-  PassButton,
+  CommandButton,
 } from './styles';
 
 function App() {
+  const textRef = useRef(null);
   const [micPermission, setMicPermission] = useState('');
-  const [clicked, setClicked] = useState('');
   const [isLinstening, setIsLinstening] = useState(true);
   const [buttons, setButtons] = useState([]);
   const [type, setType] = useState('text');
-  const { commands_labels, speech_command } = useSelector(state => state);
+  const { lang1, lang2, selected_language } = useSelector(state => state);
   const dispatch = useDispatch();
-  const commands = [
-    {
-      command: commands_labels.mic_off,
-      callback: ({ resetTranscript }) => {
-        toogleMicrophone();
-        resetTranscript();
-        setClicked(() => {
-          setTimeout(() => setClicked(''), 1200);
-          return commands_labels.mic_off;
-        });
-      },
-    },
-    {
-      command: commands_labels.button,
-      callback: ({ resetTranscript }) => {
-        toogleButton('button');
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.text,
-      callback: ({ resetTranscript }) => {
-        toogleButton('text');
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.next,
-      callback: () => {
-        next();
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.verify,
-      callback: ({ resetTranscript }) => {
-        next();
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.send,
-      callback: ({ resetTranscript }) => {
-        sendDataToDuolinguo();
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.clear,
-      callback: ({ resetTranscript }) => resetTranscript(),
-    },
-    {
-      command: commands_labels.speech_control,
-      callback: ({ resetTranscript }) => {
-        dispatch(updateSpeechControl(false));
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.listen,
-      callback: ({ resetTranscript }) => {
-        sendData('listen');
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.listen_slow,
-      callback: ({ resetTranscript }) => {
-        sendData('listen_slow');
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.speak,
-      callback: ({ resetTranscript }) => {
-        sendData('speak');
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.cant_speak,
-      callback: ({ resetTranscript }) => {
-        sendData('cant_speak');
-        resetTranscript();
-      },
-    },
-    {
-      command: commands_labels.cant_listen,
-      callback: ({ resetTranscript }) => {
-        sendData('cant_listen');
-        resetTranscript();
-      },
-    },
-  ];
-  const connfig = speech_command ? { commands } : {};
-  const { transcript, resetTranscript } = useSpeechRecognition(connfig);
+  const { transcript, resetTranscript } = useSpeechRecognition();
+
+  useEffect(() => {
+    const textArea = textRef.current;
+    if (textArea) {
+      textArea.value = transcript;
+    }
+  }, [transcript]);
 
   useEffect(() => {
     navigator.permissions.query({ name: 'microphone' }).then(function (result) {
@@ -133,12 +44,12 @@ function App() {
       } else if (result.state === 'denied') {
         console.log('not ok');
       }
+      SpeechRecognition.startListening({
+        continuous: true,
+        language: selected_language.value,
+      });
     });
-  }, []);
-
-  useEffect(() => {
-    SpeechRecognition.startListening({ continuous: true });
-  }, []);
+  }, [selected_language.value]);
 
   useEffect(() => {
     const words = transcript.split(' ');
@@ -152,31 +63,25 @@ function App() {
 
   const sendDataToDuolinguo = useCallback(() => {
     if (type === 'button') {
-      if (speech_command) {
-        buttons.forEach((btn, index, object) => {
-          if (btn === commands_labels.send) {
-            object.splice(index, 1);
-          }
-        });
-      }
       sendData(type, { buttons });
     } else {
-      let text = transcript;
-      if (speech_command) {
-        text = (transcript || '').replace(commands_labels.send, ' ');
-      }
       sendData(type, {
-        text,
+        text: textRef.current.value,
       });
     }
-  }, [
-    buttons,
-    commands_labels.send,
-    sendData,
-    transcript,
-    type,
-    speech_command,
-  ]);
+    messager({ type: 'next' });
+    resetTranscript();
+  }, [buttons, resetTranscript, sendData, type]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        sendDataToDuolinguo();
+        return;
+      }
+      messager({ type: 'number', data: { number: e.key } });
+    });
+  }, [resetTranscript, sendDataToDuolinguo]);
 
   const removeOption = useCallback(i => {
     setButtons(btns => {
@@ -191,8 +96,11 @@ function App() {
       SpeechRecognition.stopListening();
       return;
     }
-    SpeechRecognition.startListening({ continuous: true });
-  }, [isLinstening]);
+    SpeechRecognition.startListening({
+      continuous: true,
+      language: selected_language.value,
+    });
+  }, [isLinstening, selected_language.value]);
 
   const toogleButton = useCallback(
     name => {
@@ -202,29 +110,122 @@ function App() {
     },
     [resetTranscript],
   );
-  const next = useCallback(() => {
-    messager({ type: 'next' });
-    resetTranscript();
-  }, [resetTranscript]);
+
+  const selectLanguage = useCallback(
+    (key, e) => {
+      const { value: name } = e.target;
+      const value = Object.keys(languages).find(l => languages[l] === name);
+      const data = { name, value };
+      dispatch(updateLanguage(key, data));
+    },
+    [dispatch],
+  );
+
+  const choiceLanguage = useCallback(
+    lang => {
+      dispatch(updateSelectedLanguage(lang));
+    },
+    [dispatch],
+  );
 
   const clear = useCallback(() => {
     setButtons([]);
     resetTranscript();
   }, [resetTranscript]);
 
-  const toggleCheckbox = useCallback(() => {
-    dispatch(updateSpeechControl(!speech_command));
-  }, [dispatch, speech_command]);
+  const speak = useCallback(() => {
+    setIsLinstening(false);
+    SpeechRecognition.stopListening();
+    sendData('speak');
+  }, [sendData]);
 
   return (
     <Container>
       <span>mic: {micPermission}</span>
+      <div className="lang-container">
+        <span>Meu idioma:</span>
+        <select
+          onChange={e => selectLanguage('lang1', e)}
+          defaultValue={lang1.name}
+        >
+          {Object.keys(languages).map(lang => (
+            <option key={lang}>{lang}</option>
+          ))}
+        </select>
+      </div>
+      <div className="lang-container">
+        <span>Estou aprendendo:</span>
+        <select
+          onChange={e => selectLanguage('lang2', e)}
+          defaultValue={lang2.name}
+        >
+          {Object.keys(languages).map(lang => (
+            <option key={lang}>{lang}</option>
+          ))}
+        </select>
+      </div>
+      <div className="choice-lang">
+        <span>Eu estou falando em:</span>
+        <div>
+          <Button
+            selected={selected_language.value === lang1.value}
+            onClick={() => choiceLanguage(lang1)}
+          >
+            {lang1.name}
+          </Button>
+          <Button
+            selected={selected_language.value === lang2.value}
+            onClick={() => choiceLanguage(lang2)}
+          >
+            {lang2.name}
+          </Button>
+        </div>
+      </div>
+      <div className="control">
+        <div className="types">
+          <span>Selecionar o tipo de ação: </span>
+          <div>
+            <Button
+              selected={type === 'text'}
+              onClick={() => toogleButton('text')}
+            >
+              Texto
+            </Button>
+            <Button
+              selected={type === 'button'}
+              onClick={() => toogleButton('button')}
+            >
+              Botão
+            </Button>
+            <NextButton
+              className="next"
+              onClick={sendDataToDuolinguo}
+              type="button"
+            >
+              Próximo
+            </NextButton>
+          </div>
+        </div>
+        <div className="cmds">
+          <span>Selecionar o tipo de ação: </span>
+          <div>
+            <CommandButton onClick={() => sendData('listen')}>
+              Escutar
+            </CommandButton>
+            <CommandButton onClick={() => sendData('listen_slow')}>
+              Escutar devagar
+            </CommandButton>
+            <CommandButton onClick={speak}>Falar</CommandButton>
+            <CommandButton onClick={() => sendData('speak')}>
+              Verificar fala
+            </CommandButton>
+          </div>
+        </div>
+      </div>
       <div className="control-container">
         <div>
-          <Mic
-            onClick={toogleMicrophone}
-            clicked={clicked === commands_labels.mic_off}
-          >
+          <div className="select-container" />
+          <Mic onClick={toogleMicrophone}>
             {isLinstening ? (
               <BsFillMicMuteFill
                 color={lighten(0.2, '#2CBBFA')}
@@ -240,81 +241,16 @@ function App() {
           <AiOutlineClear fontSize={24} color="#9D9D9D" />
         </Clear>
       </div>
-      {type === 'text' && <p>{transcript}</p>}
+      {type === 'text' && <textarea ref={textRef} />}
       {type === 'button' && (
         <div className="btns">
-          {(buttons || [])?.map((b, i) => (
+          {(buttons || [])?.map((btn, i) => (
             <ButtonOption onClick={() => removeOption(i)} key={i}>
-              {b}
+              {btn}
             </ButtonOption>
           ))}
         </div>
       )}
-      <div className="control">
-        <Button
-          selected={type === 'text'}
-          clicked={type === 'text'}
-          onClick={() => toogleButton('text')}
-        >
-          Texto
-        </Button>
-        <Button
-          selected={type === 'button'}
-          clicked={type === 'button'}
-          onClick={() => toogleButton('button')}
-        >
-          Botão
-        </Button>
-        <Button onClick={() => sendData('listen')}>Escutar</Button>
-        <Button onClick={() => sendData('speak')}>Falar</Button>
-        <NextButton
-          className="next"
-          onClick={sendDataToDuolinguo}
-          type="button"
-        >
-          Enviar
-        </NextButton>
-        <NextButton className="next" onClick={next} type="button">
-          Verificar
-        </NextButton>
-        <NextButton className="next" onClick={next} type="button">
-          Próximo
-        </NextButton>
-        <PassButton
-          selected={type === 'button'}
-          clicked={type === 'button'}
-          onClick={() => toogleButton('button')}
-        >
-          Não posso falar agora
-        </PassButton>
-        <PassButton
-          selected={type === 'button'}
-          clicked={type === 'button'}
-          onClick={() => toogleButton('button')}
-        >
-          Não posso ouvir agora
-        </PassButton>
-      </div>
-      <div className="control-menu">
-        <header>
-          <span>Ativar comandos de voz</span>
-          <button onClick={toggleCheckbox} type="button">
-            {speech_command ? (
-              <IoMdCheckboxOutline
-                className="checkbox"
-                fontSize={20}
-                color="#2CBBFA"
-              />
-            ) : (
-              <MdCheckBoxOutlineBlank
-                className="checkbox"
-                fontSize={20}
-                color="#9D9D9D"
-              />
-            )}
-          </button>
-        </header>
-      </div>
     </Container>
   );
 }

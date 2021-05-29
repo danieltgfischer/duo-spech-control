@@ -14,12 +14,42 @@ function speak() {
   document.querySelector('button[data-test="challenge-speak-button"]').click();
 }
 
-function updateTextArea(text) {
+function updateText(text) {
   const textArea = document.querySelector('textarea');
-  textArea.value = text;
-  const evt = document.createEvent('Events');
-  evt.initEvent('change', true, true);
-  textArea.dispatchEvent(evt);
+  const input = document.querySelector('input');
+  if (textArea) {
+    textArea.value = text;
+    const evt = document.createEvent('Events');
+    evt.initEvent('change', true, true);
+    textArea.dispatchEvent(evt);
+  }
+  if (input) {
+    input.value = text;
+    const evt = document.createEvent('Events');
+    evt.initEvent('change', true, true);
+    input.dispatchEvent(evt);
+  }
+}
+
+function clickButtons(btns) {
+  let buttons = document.querySelectorAll('*[data-test="challenge-tap-token"]');
+  if (buttons.length === 0) {
+    buttons = document.querySelectorAll('*[data-test="challenge-judge-text"]');
+  }
+  if (buttons) {
+    btns.forEach(b => {
+      buttons.forEach(e => {
+        if (e.innerHTML.toLowerCase() === b.toLowerCase()) {
+          e.click();
+        }
+      });
+    });
+  }
+}
+
+function clickButtonsByNumber(number) {
+  const btn = $(`span:contains(${number})`);
+  btn.click();
 }
 
 if (!window.chrome.runtime.onMessage.hasListeners()) {
@@ -27,7 +57,7 @@ if (!window.chrome.runtime.onMessage.hasListeners()) {
     if (request !== undefined) {
       if (request?.type !== undefined && request?.type === 'text') {
         const text = request?.data?.text;
-        updateTextArea(text);
+        updateText(text);
         return true;
       }
       if (request?.type !== undefined && request?.type === 'next') {
@@ -44,6 +74,16 @@ if (!window.chrome.runtime.onMessage.hasListeners()) {
       }
       if (request?.type !== undefined && request?.type === 'speak') {
         speak();
+        return true;
+      }
+      if (request?.type !== undefined && request?.type === 'button') {
+        const btns = request?.data?.buttons;
+        clickButtons(btns);
+        return true;
+      }
+      if (request?.type !== undefined && request?.type === 'number') {
+        const number = request?.data?.number;
+        clickButtonsByNumber(number);
         return true;
       }
     }

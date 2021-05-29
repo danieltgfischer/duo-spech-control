@@ -13,26 +13,54 @@ const blink = keyframes`
   }
 `;
 
-const out = keyframes`
- from {
-    opacity: 0;
-  }
-  60% {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-`;
-
 export const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  height: 400px;
   width: 100%;
   background-color: #fff;
+  > textarea {
+    font-family: Roboto, sans-serif;
+  }
+  .next-container {
+    width: 60%;
+    display: flex;
+    justify-content: space-around;
+  }
+  .lang-container {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    margin: 2px 0;
+
+    > select {
+      cursor: pointer;
+      background-color: #fff;
+      width: 150px;
+      outline: none;
+      border-radius: 3px;
+      padding: 2px 0;
+      border: 1px solid #e5e5e5;
+      color: #4b4b4b;
+    }
+  }
+  .choice-lang {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 2px 0;
+    margin: 5px 0 0;
+    padding: 2px 0;
+    > div {
+      display: flex;
+      margin: 0 10px;
+      > button {
+        margin: 5px 15px;
+      }
+    }
+  }
   .control-container {
     position: relative;
     display: flex;
@@ -42,7 +70,10 @@ export const Container = styled.div`
     > div {
       position: relative;
       display: flex;
-
+      .select-container {
+        position: absolute;
+        left: -150px;
+      }
       .signal {
         position: absolute;
         top: 25px;
@@ -56,7 +87,8 @@ export const Container = styled.div`
       }
     }
   }
-  > p {
+  > textarea {
+    outline: none;
     background-color: #f7f7f7;
     border-radius: 10px;
     padding: 10px 12px;
@@ -105,10 +137,37 @@ export const Container = styled.div`
 
   .control {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
     justify-content: space-around;
-    margin: 15px 0 0;
+    margin: 5px 0 0;
     width: 100%;
+    .types {
+      padding: 5px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+
+      > div {
+        width: 80%;
+        display: flex;
+        justify-content: space-around;
+      }
+    }
+    .cmds {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      margin: 10px 0 0;
+      > div {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        column-gap: 20px;
+      }
+    }
   }
 
   .control-menu {
@@ -116,8 +175,12 @@ export const Container = styled.div`
     > header {
       display: flex;
       align-items: center;
-      .checkbox {
-        padding: 0 0 0 4px;
+      > button {
+        position: relative;
+
+        .checkbox {
+          padding: 0 0 0 4px;
+        }
       }
     }
   }
@@ -132,7 +195,6 @@ export const NextButton = styled.button`
   border: 1px #58a700;
   border-radius: 10px;
   margin: 10px 0 0;
-
   width: 80px;
   height: 30px;
   font-weight: bold;
@@ -143,19 +205,6 @@ export const NextButton = styled.button`
 
   :active {
     border: none;
-  }
-
-  ::before {
-    display: ${({ clicked }) => (clicked ? 'static' : 'none')};
-    z-index: 1;
-    top: -5px;
-    left: -5px;
-    position: absolute;
-    border: 1px solid red;
-    width: 84px;
-    content: ' ';
-    height: 34px;
-    animation: ${out} 1s ease-out forwards;
   }
 `;
 
@@ -168,25 +217,13 @@ export const Button = styled.button`
     ${({ selected }) => (selected ? darken(0.02, '#2CBBFA') : '#e5e5e5')};
   border-radius: 10px;
   width: 80px;
-  height: 30px;
+  min-height: 30px;
   font-weight: bold;
   margin: 10px 0 0;
-
+  padding: 2px 0;
   :hover {
     background: ${({ selected }) =>
-      selected ? darken(0.001, '#2CBBFA') : '#f7f7f7'};
-  }
-  ::before {
-    display: ${({ clicked }) => (clicked ? 'static' : 'none')};
-    z-index: 1;
-    top: -5px;
-    left: -5px;
-    position: absolute;
-    border: 1px solid red;
-    width: 84px;
-    content: ' ';
-    height: 34px;
-    animation: ${out} 1s ease-out forwards;
+      selected ? darken(0.05, '#2CBBFA') : '#f7f7f7'};
   }
 `;
 
@@ -199,13 +236,10 @@ export const ButtonOption = styled.button`
   padding: 2px 4px;
   font-weight: bold;
   margin: 5px;
-
   transition: 0.1s;
-
   :hover {
     box-shadow: 2px 5px 10px #eee;
   }
-
   :active {
     transform: translateY(1px);
   }
@@ -223,19 +257,6 @@ export const Mic = styled.button`
   :hover {
     transform: scale(1.1);
   }
-
-  ::before {
-    display: ${({ clicked }) => (clicked ? 'static' : 'none')};
-    z-index: 1;
-    top: -5px;
-    left: -7px;
-    position: absolute;
-    border: 1px solid red;
-    width: 60px;
-    content: ' ';
-    height: 54px;
-    animation: ${out} 1s ease-out forwards;
-  }
 `;
 
 export const Clear = styled.button`
@@ -251,45 +272,20 @@ export const Clear = styled.button`
   :hover {
     transform: scale(1.1);
   }
-
-  ::before {
-    /* display: ${({ clicked }) => (clicked ? 'static' : 'none')}; */
-    z-index: 1;
-    top: -4px;
-    left: -4px;
-    position: absolute;
-    border: 1px solid red;
-    width: 34px;
-    content: ' ';
-    height: 34px;
-    animation: ${out} 1s ease-out forwards;
-  }
 `;
 
-export const PassButton = styled.button`
+export const CommandButton = styled.button`
   position: relative;
   background: #fff;
   color: #4b4b4b;
   border-width: 2px 2px 4px;
   border: 2px solid #e5e5e5;
   border-radius: 10px;
-  width: 170px;
   height: 30px;
+  padding: 0 10px;
   margin: 10px 0 0;
   font-weight: bold;
   :hover {
     background: #f7f7f7;
-  }
-  ::before {
-    display: ${({ clicked }) => (clicked ? 'static' : 'none')};
-    z-index: 1;
-    top: -5px;
-    left: -5px;
-    position: absolute;
-    border: 1px solid red;
-    width: 172px;
-    content: ' ';
-    height: 34px;
-    animation: ${out} 1s ease-out forwards;
   }
 `;
