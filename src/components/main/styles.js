@@ -20,8 +20,52 @@ export const Container = styled.div`
   align-items: center;
   width: 100%;
   background-color: #fff;
-  > textarea {
-    font-family: Roboto, sans-serif;
+  .head-control {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    button:first-child {
+      padding: 0 5px 0 0;
+    }
+  }
+  .container-textarea {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    > div {
+      display: flex;
+      align-items: center;
+      margin: 0 20px 0 0;
+      align-self: flex-end;
+      > span {
+        color: #9d9d9d;
+      }
+    }
+    > textarea {
+      font-family: Roboto, sans-serif;
+      outline: none;
+      background-color: #f7f7f7;
+      border-radius: 10px;
+      padding: 10px 12px;
+      border: 1px solid #e5e5e5;
+      margin: 0 5px;
+      padding: 0 20px;
+      font-size: 16px;
+      height: 100px;
+      width: 80%;
+      overflow: scroll;
+      color: #3c3c3c;
+      overflow-x: hidden;
+      ::-webkit-scrollbar {
+        width: 3px;
+      }
+      ::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: #e5e5e5;
+      }
+    }
   }
   .next-container {
     width: 60%;
@@ -31,6 +75,7 @@ export const Container = styled.div`
   .lang-container {
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
     width: 90%;
     margin: 2px 0;
 
@@ -87,30 +132,7 @@ export const Container = styled.div`
       }
     }
   }
-  > textarea {
-    outline: none;
-    background-color: #f7f7f7;
-    border-radius: 10px;
-    padding: 10px 12px;
-    border: 1px solid #e5e5e5;
-    margin: 0 5px;
-    padding: 0 20px;
-    font-size: 16px;
-    height: 100px;
-    width: 80%;
-    overflow: scroll;
-    color: #3c3c3c;
-    overflow-x: hidden;
-    ::-webkit-scrollbar {
-      width: 3px;
-    }
-    ::-webkit-scrollbar-track {
-      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
-    }
-    ::-webkit-scrollbar-thumb {
-      background-color: #e5e5e5;
-    }
-  }
+
   .btns {
     background-color: #fff;
     border-radius: 10px;
@@ -195,8 +217,7 @@ export const NextButton = styled.button`
   border: 1px #58a700;
   border-radius: 10px;
   margin: 10px 0 0;
-  width: 80px;
-  height: 30px;
+  height: 35px;
   font-weight: bold;
 
   :hover {

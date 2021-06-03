@@ -38,6 +38,7 @@
     "no-use-before-define": "off",
     "import/no-unresolved": "off",
     "react/no-array-index-key": "off",
-    "no-unused-vars": "off"
+    "no-unused-vars": "off",
+    "no-param-reassign": "off"
   }
 }

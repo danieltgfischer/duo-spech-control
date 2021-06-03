@@ -4,6 +4,7 @@ const initialState = {
   lang1: { name: 'Português (Brasil)', value: 'pt-BR' },
   lang2: { name: 'Inglês (US)', value: 'en-US' },
   selected_language: { name: 'Português (Brasil)', value: 'pt-BR' },
+  app_language: '',
 };
 
 export default function app(state = initialState, action) {
@@ -17,6 +18,7 @@ export default function app(state = initialState, action) {
       const { lang } = payload;
       return { ...state, selected_language: lang };
     }
+
     default:
       return state;
   }

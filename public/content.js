@@ -14,7 +14,7 @@ function speak() {
   document.querySelector('button[data-test="challenge-speak-button"]').click();
 }
 
-function updateText(text) {
+function updateText(text = '') {
   const textArea = document.querySelector('textarea');
   const input = document.querySelector('input');
   if (textArea) {
@@ -31,8 +31,23 @@ function updateText(text) {
   }
 }
 
+function updateInputs(text = '') {
+  const inputs = document.querySelectorAll('input') || [];
+  const texts = text.split(' ');
+  if (inputs.length > 0) {
+    inputs.forEach((input, i) => {
+      input.value = texts[i];
+      const evt = document.createEvent('Events');
+      evt.initEvent('change', true, true);
+      input.dispatchEvent(evt);
+    });
+  }
+}
+
 function clickButtons(btns) {
-  let buttons = document.querySelectorAll('*[data-test="challenge-tap-token"]');
+  let buttons = document.querySelectorAll(
+    'div[data-test="word-bank"] > div >*[data-test="challenge-tap-token"]',
+  );
   if (buttons.length === 0) {
     buttons = document.querySelectorAll('*[data-test="challenge-judge-text"]');
   }
@@ -41,7 +56,11 @@ function clickButtons(btns) {
       buttons.forEach(e => {
         if (e.innerHTML.toLowerCase() === b.toLowerCase()) {
           e.click();
-        }
+          const bIndex = buttons.indexOf(e);
+          if (bIndex > -1) {
+            buttons.splice(bIndex, 1);
+          }
+        } // TODO tentar arrumar bug palavras iguais
       });
     });
   }
@@ -49,15 +68,33 @@ function clickButtons(btns) {
 
 function clickButtonsByNumber(number) {
   const btn = $(`span:contains(${number})`);
+  if (btn.length === 0) {
+    const buttons = document.querySelectorAll(
+      'div[data-test="word-bank"] > div >*[data-test="challenge-tap-token"]',
+    );
+    const n = Number(number) - 1;
+    buttons[n].click();
+    return;
+  }
   btn.click();
 }
 
 if (!window.chrome.runtime.onMessage.hasListeners()) {
   window.chrome.runtime.onMessage.addListener(request => {
     if (request !== undefined) {
+      if (request?.type !== undefined && request?.type === 'button') {
+        const btns = request?.data?.buttons;
+        clickButtons(btns);
+        return true;
+      }
       if (request?.type !== undefined && request?.type === 'text') {
         const text = request?.data?.text;
         updateText(text);
+        return true;
+      }
+      if (request?.type !== undefined && request?.type === 'multi_input') {
+        const text = request?.data?.text;
+        updateInputs(text);
         return true;
       }
       if (request?.type !== undefined && request?.type === 'next') {
@@ -74,11 +111,6 @@ if (!window.chrome.runtime.onMessage.hasListeners()) {
       }
       if (request?.type !== undefined && request?.type === 'speak') {
         speak();
-        return true;
-      }
-      if (request?.type !== undefined && request?.type === 'button') {
-        const btns = request?.data?.buttons;
-        clickButtons(btns);
         return true;
       }
       if (request?.type !== undefined && request?.type === 'number') {

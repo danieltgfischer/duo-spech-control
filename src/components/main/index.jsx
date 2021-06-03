@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef, memo, useMemo } from 'react';
 import { lighten } from 'polished';
 import { BsFillMicFill, BsFillMicMuteFill } from 'react-icons/bs';
 import { AiOutlineClear } from 'react-icons/ai';
+import { BiCheckboxChecked, BiCheckbox } from 'react-icons/bi';
+import { CgMaximizeAlt, CgCloseR } from 'react-icons/cg';
 import SpeechRecognition, {
   useSpeechRecognition,
 } from 'react-speech-recognition';
@@ -23,18 +25,19 @@ function App() {
   const textRef = useRef(null);
   const [micPermission, setMicPermission] = useState('');
   const [isLinstening, setIsLinstening] = useState(true);
+  const [multi_input, setMultiInput] = useState(false);
   const [buttons, setButtons] = useState([]);
   const [type, setType] = useState('text');
   const { lang1, lang2, selected_language } = useSelector(state => state);
   const dispatch = useDispatch();
   const { transcript, resetTranscript } = useSpeechRecognition();
-
+  const memoTranscript = useMemo(() => transcript, [transcript]);
   useEffect(() => {
     const textArea = textRef.current;
-    if (textArea) {
-      textArea.value = transcript;
+    if (textArea !== null) {
+      textArea.value = memoTranscript;
     }
-  }, [transcript]);
+  }, [memoTranscript]);
 
   useEffect(() => {
     navigator.permissions.query({ name: 'microphone' }).then(function (result) {
@@ -46,32 +49,67 @@ function App() {
       }
       SpeechRecognition.startListening({
         continuous: true,
-        language: selected_language.value,
+        language: selected_language?.value,
       });
     });
-  }, [selected_language.value]);
+  }, [selected_language?.value]);
 
   useEffect(() => {
-    const words = transcript.split(' ');
+    const words = memoTranscript.split(' ');
     if (words[0] === '') return;
     setButtons(words);
-  }, [transcript]);
+  }, [memoTranscript]);
 
   const sendData = useCallback((typeArg, data = {}) => {
     messager({ type: typeArg, data });
   }, []);
 
+  const closeWindow = useCallback(() => {
+    window.close();
+  }, []);
+
+  const undock = useCallback(() => {
+    const { height, width } = window.screen;
+    window?.chrome?.windows?.create({
+      url: '/index.html',
+      type: 'popup',
+      width: 350,
+      height,
+      left: width - 350,
+    });
+  }, []);
+
   const sendDataToDuolinguo = useCallback(() => {
     if (type === 'button') {
       sendData(type, { buttons });
+    } else if (multi_input) {
+      sendData('multi_input', {
+        text: textRef.current?.value,
+      });
     } else {
       sendData(type, {
-        text: textRef.current.value,
+        text: textRef.current?.value,
       });
     }
     messager({ type: 'next' });
     resetTranscript();
-  }, [buttons, resetTranscript, sendData, type]);
+    if (!isLinstening) {
+      setIsLinstening(!isLinstening);
+    }
+    setButtons([]);
+    SpeechRecognition.startListening({
+      continuous: true,
+      language: selected_language?.value,
+    });
+  }, [
+    buttons,
+    isLinstening,
+    multi_input,
+    resetTranscript,
+    selected_language?.value,
+    sendData,
+    type,
+  ]);
 
   useEffect(() => {
     document.addEventListener('keydown', e => {
@@ -98,9 +136,9 @@ function App() {
     }
     SpeechRecognition.startListening({
       continuous: true,
-      language: selected_language.value,
+      language: selected_language?.value,
     });
-  }, [isLinstening, selected_language.value]);
+  }, [isLinstening, selected_language?.value]);
 
   const toogleButton = useCallback(
     name => {
@@ -113,7 +151,7 @@ function App() {
 
   const selectLanguage = useCallback(
     (key, e) => {
-      const { value: name } = e.target;
+      const name = e.target?.value;
       const value = Object.keys(languages).find(l => languages[l] === name);
       const data = { name, value };
       dispatch(updateLanguage(key, data));
@@ -129,6 +167,10 @@ function App() {
   );
 
   const clear = useCallback(() => {
+    const textArea = textRef.current;
+    if (textArea !== null) {
+      textArea.value = '';
+    }
     setButtons([]);
     resetTranscript();
   }, [resetTranscript]);
@@ -138,9 +180,16 @@ function App() {
     SpeechRecognition.stopListening();
     sendData('speak');
   }, [sendData]);
-
   return (
     <Container>
+      <div className="head-control">
+        <button type="button" onClick={undock}>
+          <CgMaximizeAlt color="#cdcdcd" fontSize={20} />
+        </button>
+        <button type="button" onClick={closeWindow}>
+          <CgCloseR color="#cdcdcd" fontSize={20} />
+        </button>
+      </div>
       <span>mic: {micPermission}</span>
       <div className="lang-container">
         <span>Meu idioma:</span>
@@ -168,13 +217,13 @@ function App() {
         <span>Eu estou falando em:</span>
         <div>
           <Button
-            selected={selected_language.value === lang1.value}
+            selected={selected_language?.value === lang1?.value}
             onClick={() => choiceLanguage(lang1)}
           >
             {lang1.name}
           </Button>
           <Button
-            selected={selected_language.value === lang2.value}
+            selected={selected_language?.value === lang2?.value}
             onClick={() => choiceLanguage(lang2)}
           >
             {lang2.name}
@@ -183,7 +232,7 @@ function App() {
       </div>
       <div className="control">
         <div className="types">
-          <span>Selecionar o tipo de ação: </span>
+          <span>Selecionar o tipo de ação para o microfone: </span>
           <div>
             <Button
               selected={type === 'text'}
@@ -197,17 +246,10 @@ function App() {
             >
               Botão
             </Button>
-            <NextButton
-              className="next"
-              onClick={sendDataToDuolinguo}
-              type="button"
-            >
-              Próximo
-            </NextButton>
           </div>
         </div>
         <div className="cmds">
-          <span>Selecionar o tipo de ação: </span>
+          <span>Botões da pagina do Duolínguo: </span>
           <div>
             <CommandButton onClick={() => sendData('listen')}>
               Escutar
@@ -216,9 +258,13 @@ function App() {
               Escutar devagar
             </CommandButton>
             <CommandButton onClick={speak}>Falar</CommandButton>
-            <CommandButton onClick={() => sendData('speak')}>
-              Verificar fala
-            </CommandButton>
+            <NextButton
+              className="next"
+              onClick={sendDataToDuolinguo}
+              type="button"
+            >
+              Próximo
+            </NextButton>
           </div>
         </div>
       </div>
@@ -241,7 +287,23 @@ function App() {
           <AiOutlineClear fontSize={24} color="#9D9D9D" />
         </Clear>
       </div>
-      {type === 'text' && <textarea ref={textRef} />}
+      {type === 'text' && (
+        <div className="container-textarea">
+          <div>
+            <span>Multiplos inputs</span>
+            {multi_input ? (
+              <button type="button" onClick={() => setMultiInput(!multi_input)}>
+                <BiCheckboxChecked color="#2CBBFA" fontSize={24} />
+              </button>
+            ) : (
+              <button type="button" onClick={() => setMultiInput(!multi_input)}>
+                <BiCheckbox fontSize={24} color="#9D9D9D" />
+              </button>
+            )}
+          </div>
+          <textarea ref={textRef} />
+        </div>
+      )}
       {type === 'button' && (
         <div className="btns">
           {(buttons || [])?.map((btn, i) => (
@@ -255,4 +317,4 @@ function App() {
   );
 }
 
-export default App;
+export default memo(App);
