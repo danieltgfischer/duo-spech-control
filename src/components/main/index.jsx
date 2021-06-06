@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef, memo, useMemo } from 'react';
+import { useCallback, useEffect, useState, useRef, memo } from 'react';
 import { lighten } from 'polished';
 import { BsFillMicFill, BsFillMicMuteFill } from 'react-icons/bs';
 import { AiOutlineClear } from 'react-icons/ai';
@@ -31,13 +31,12 @@ function App() {
   const { lang1, lang2, selected_language } = useSelector(state => state);
   const dispatch = useDispatch();
   const { transcript, resetTranscript } = useSpeechRecognition();
-  const memoTranscript = useMemo(() => transcript, [transcript]);
   useEffect(() => {
     const textArea = textRef.current;
     if (textArea !== null) {
-      textArea.value = memoTranscript;
+      textArea.value = transcript;
     }
-  }, [memoTranscript]);
+  }, [transcript]);
 
   useEffect(() => {
     navigator.permissions.query({ name: 'microphone' }).then(function (result) {
@@ -55,10 +54,10 @@ function App() {
   }, [selected_language?.value]);
 
   useEffect(() => {
-    const words = memoTranscript.split(' ');
+    const words = transcript.split(' ');
     if (words[0] === '') return;
     setButtons(words);
-  }, [memoTranscript]);
+  }, [transcript]);
 
   const sendData = useCallback((typeArg, data = {}) => {
     messager({ type: typeArg, data });
@@ -80,15 +79,16 @@ function App() {
   }, []);
 
   const sendDataToDuolinguo = useCallback(() => {
+    const text = textRef.current?.value;
     if (type === 'button') {
       sendData(type, { buttons });
-    } else if (multi_input) {
+    } else if (multi_input && type === 'text' && text !== '') {
       sendData('multi_input', {
-        text: textRef.current?.value,
+        text,
       });
-    } else {
+    } else if (type === 'text' && text !== '') {
       sendData(type, {
-        text: textRef.current?.value,
+        text,
       });
     }
     messager({ type: 'next' });
@@ -180,6 +180,7 @@ function App() {
     SpeechRecognition.stopListening();
     sendData('speak');
   }, [sendData]);
+
   return (
     <Container>
       <div className="head-control">

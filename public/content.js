@@ -45,22 +45,25 @@ function updateInputs(text = '') {
 }
 
 function clickButtons(btns) {
-  let buttons = document.querySelectorAll(
-    'div[data-test="word-bank"] > div >*[data-test="challenge-tap-token"]',
+  let buttons = Array.from(
+    document.querySelectorAll(
+      'div[data-test="word-bank"] > div >*[data-test="challenge-tap-token"]',
+    ),
   );
   if (buttons.length === 0) {
-    buttons = document.querySelectorAll('*[data-test="challenge-judge-text"]');
+    buttons = Array.from(
+      document.querySelectorAll('*[data-test="challenge-judge-text"]'),
+    );
   }
   if (buttons) {
     btns.forEach(b => {
-      buttons.forEach(e => {
+      buttons.every((e, i) => {
         if (e.innerHTML.toLowerCase() === b.toLowerCase()) {
           e.click();
-          const bIndex = buttons.indexOf(e);
-          if (bIndex > -1) {
-            buttons.splice(bIndex, 1);
-          }
-        } // TODO tentar arrumar bug palavras iguais
+          delete buttons[i];
+          return false;
+        }
+        return true;
       });
     });
   }
